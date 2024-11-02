@@ -32,7 +32,6 @@
             box-sizing: border-box;
         }
 
-        /* 日期选择部分靠右对齐 */
         .date-container {
             text-align: right;
             margin-bottom: 20px;
@@ -61,13 +60,7 @@
             border: 1px solid #ddd;
             padding: 8px;
             text-align: center;
-        }
-
-        /* 缩小日期列的宽度 */
-        .schedule th.date-col,
-        .schedule td.date-col {
-            width: 90px;
-            /* 设置固定宽度 */
+            /* 居中对齐 */
         }
 
         .schedule th {
@@ -79,11 +72,26 @@
             font-weight: bold;
         }
 
+        .badge {
+            display: inline-block;
+            background-color: red;
+            /* 红底 */
+            color: white;
+            /* 白字 */
+            border-radius: 5px;
+            /* 圆角 */
+            padding: 2px 4px;
+            /* 内边距减小 */
+            font-size: 0.7rem;
+            /* 字体大小减小 */
+            margin-left: 5px;
+            /* 左边距 */
+        }
+
         .schedule tr:nth-child(even) {
             background-color: #f9f9f9;
         }
 
-        /* 在小屏幕上自适应 */
         @media (max-width: 768px) {
             h1 {
                 font-size: 1.2rem;
@@ -95,12 +103,6 @@
             .schedule td {
                 font-size: 0.8rem;
                 padding: 5px;
-            }
-
-            /* 缩小日期列的宽度在移动端 */
-            .schedule th.date-col,
-            .schedule td.date-col {
-                width: 70px;
             }
         }
     </style>
@@ -125,6 +127,7 @@
                     <th>主班</th>
                     <th>副班</th>
                     <th>副班</th>
+                    <th>备注</th> <!-- 添加备注列 -->
                 </tr>
             </thead>
             <tbody></tbody>
@@ -133,17 +136,30 @@
 
     <script>
         const persons = [
-            ['杜　阳', '左平周', '王勇伟'],  // 9月1日，杜阳用全角空格调整宽度
-            ['王勇伟', '杜　阳', '左平周'],  // 9月2日
-            ['左平周', '王勇伟', '杜　阳']   // 9月3日
+            ['杜　阳', '左平周', '王勇伟'],
+            ['王勇伟', '杜　阳', '左平周'],
+            ['左平周', '王勇伟', '杜　阳']
         ];
 
         const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
 
-        // 计算两个日期之间的天数差
         function daysBetween(startDate, endDate) {
             const oneDay = 24 * 60 * 60 * 1000; // 一天的毫秒数
             return Math.floor((endDate - startDate) / oneDay);
+        }
+
+        function lunarDateIndicator(lunarDay) {
+            const heYanJiDays = [2, 12, 22, 7, 17, 27];
+            const beiZhaoJiDays = [4, 14, 24, 9, 19, 29];
+
+            let indicator = '';
+            if (heYanJiDays.includes(lunarDay)) {
+                indicator = '<span class="badge">河沿集</span>';
+            }
+            if (beiZhaoJiDays.includes(lunarDay)) {
+                indicator = '<span class="badge">北沼集</span>';
+            }
+            return indicator;
         }
 
         function generateSchedule(startDate) {
@@ -170,6 +186,10 @@
                 const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6;
                 const dateClass = isWeekend ? 'weekend' : '';
 
+                // 获取农历标志
+                const lunarDay = currentDate.getDate(); // 假设当前日期就是农历日期
+                const indicator = lunarDateIndicator(lunarDay);
+
                 // 添加一行到表格
                 const rowHTML = `
                     <tr>
@@ -178,6 +198,7 @@
                         <td>${primary}</td>
                         <td>${secondary}</td>
                         <td>${tertiary}</td>
+                        <td>${indicator}</td> <!-- 将标志放在备注列 -->
                     </tr>
                 `;
 
