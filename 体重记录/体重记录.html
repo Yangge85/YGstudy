@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>体重记录</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="date"],
+        .form-group input[type="number"],
+        .form-group button {
+            flex: 1 1 32%;
+            /* Each input/button takes 32% of the width */
+            padding: 6px 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .filter-group {
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group button,
+        .filter-group input[type="date"] {
+            flex: 1 1 30%;
+            /* Flexible width with a max of 30% */
+            font-size: 14px;
+            padding: 4px 8px;
+        }
+
+        .actions button {
+            font-size: 12px;
+            padding: 5px 10px;
+            margin: 2px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        .chart-container {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 id="page-title">体重记录</h1>
+
+        <div class="form-group">
+            <input type="text" id="username" placeholder="输入用户名" />
+            <button id="set-username">设置用户名</button>
+        </div>
+
+        <div class="form-group">
+            <input type="date" id="date" />
+            <input type="number" id="weight" placeholder="体重 (kg)" step="0.1" />
+            <button id="save-record">保存记录</button>
+        </div>
+
+        <div class="filter-group">
+            <button id="filter-all">所有天</button>
+            <button id="filter-7">近7天</button>
+            <button id="filter-30">近30天</button>
+        </div>
+
+        <div class="filter-group">
+            <input type="date" id="custom-start" />
+            <input type="date" id="custom-end" />
+            <button id="filter-custom">应用</button>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="weight-chart" width="800" height="400"></canvas>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>体重 (kg)</th>
+                    <th>变化 (kg)</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="record-table">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let records = JSON.parse(localStorage.getItem('weightRecords')) || {};
+        let username = localStorage.getItem('username') || '';
+
+        // 设置日期输入框为今天的日期
+        function setDefaultDate() {
+            const today = new Date();
+            const dateString = today.toISOString().split('T')[0]; // 获取今天的日期
+            document.getElementById('date').value = dateString;
+            document.getElementById('custom-start').value = dateString;
+            document.getElementById('custom-end').value = dateString;
+        }
+
+        function updateTitle() {
+            const pageTitle = document.getElementById('page-title');
+            pageTitle.textContent = username ? `${username}的体重记录` : '体重记录';
+        }
+
+        function formatDateWithWeekday(dateString) {
+            const date = new Date(dateString);
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            const dayOfWeek = weekdays[date.getDay()];
+            return `${date.toISOString().split('T')[0]}（${dayOfWeek}）`;
+        }
+
+        function saveRecord() {
+            const date = document.getElementById('date').value;
+            const weight = parseFloat(document.getElementById('weight').value);
+
+            if (!date || isNaN(weight)) {
+                alert('请输入有效的日期和体重！');
+                return;
+            }
+
+            if (records[date] !== undefined) {
+                const confirmOverwrite = confirm(`日期 ${date} 已经有记录 (${records[date]} kg)，是否覆盖？`);
+                if (!confirmOverwrite) return;
+            }
+
+            records[date] = weight;
+            localStorage.setItem('weightRecords', JSON.stringify(records));
+            updateTable();
+            updateChartWithFilter(null, null);
+        }
+
+        function deleteRecord(date) {
+            if (confirm(`确定删除 ${date} 的记录吗？`)) {
+                delete records[date];
+                localStorage.setItem('weightRecords', JSON.stringify(records));
+                updateTable();
+                updateChartWithFilter(null, null);
+            }
+        }
+
+        function updateTable() {
+            const tableBody = document.getElementById('record-table');
+            tableBody.innerHTML = '';
+
+            const dates = Object.keys(records).sort();
+            dates.forEach((date, index) => {
+                const weight = records[date];
+                const previousWeight = records[dates[index - 1]];
+                const change = previousWeight !== undefined ? (weight - previousWeight).toFixed(1) : '-';
+                const formattedDate = formatDateWithWeekday(date);
+
+                const row = `
+                    <tr>
+                        <td>${formattedDate}</td>
+                        <td>${weight}</td>
+                        <td>${change}</td>
+                        <td class="actions">
+                            <button onclick="deleteRecord('${date}')">删除</button>
+                        </td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        function filterRecordsByDateRange(startDate, endDate) {
+            const filteredDates = Object.keys(records)
+                .filter(date => (!startDate || date >= startDate) && (!endDate || date <= endDate))
+                .sort();
+            const filteredWeights = filteredDates.map(date => records[date]);
+            return { dates: filteredDates, weights: filteredWeights };
+        }
+
+        function updateChartWithFilter(startDate, endDate) {
+            const { dates, weights } = filterRecordsByDateRange(startDate, endDate);
+            const ctx = document.getElementById('weight-chart').getContext('2d');
+            if (window.chart) {
+                window.chart.data.labels = dates;
+                window.chart.data.datasets[0].data = weights;
+                window.chart.update();
+            } else {
+                window.chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            label: '体重变化 (kg)',
+                            data: weights,
+                            borderColor: 'blue',
+                            backgroundColor: 'rgba(0, 0, 255, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: { title: { display: true, text: '日期' } },
+                            y: { title: { display: true, text: '体重 (kg)' } }
+                        }
+                    }
+                });
+            }
+        }
+
+        document.getElementById('save-record').addEventListener('click', saveRecord);
+
+        document.getElementById('filter-all').addEventListener('click', () => {
+            updateChartWithFilter(null, null);
+        });
+
+        document.getElementById('filter-7').addEventListener('click', () => {
+            const today = new Date();
+            const past7Days = new Date(today);
+            past7Days.setDate(today.getDate() - 7);
+            updateChartWithFilter(past7Days.toISOString().split('T')[0], today.toISOString().split('T')[0]);
+        });
+
+        document.getElementById('filter-30').addEventListener('click', () => {
+            const today = new Date();
+            const past30Days = new Date(today);
+            past30Days.setDate(today.getDate() - 30);
+            updateChartWithFilter(past30Days.toISOString().split('T')[0], today.toISOString().split('T')[0]);
+        });
+
+        document.getElementById('filter-custom').addEventListener('click', () => {
+            const startDate = document.getElementById('custom-start').value;
+            const endDate = document.getElementById('custom-end').value;
+            updateChartWithFilter(startDate, endDate);
+        });
+
+        document.getElementById('set-username').addEventListener('click', () => {
+            username = document.getElementById('username').value;
+            localStorage.setItem('username', username);
+            updateTitle();
+        });
+
+        setDefaultDate();
+        updateTitle();
+        updateTable();
+        updateChartWithFilter(null, null);
+    </script>
+</body>
+
+</html>
