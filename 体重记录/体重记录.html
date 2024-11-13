@@ -250,28 +250,30 @@
 
         function updateTable() {
             const tableBody = document.getElementById('record-table');
-            tableBody.innerHTML = '';
+            tableBody.innerHTML = ''; // 清空表格内容
 
-            const dates = Object.keys(records).sort();
+            // 按照日期降序排序
+            const dates = Object.keys(records).sort((a, b) => new Date(b) - new Date(a)); // 降序排列
             dates.forEach((date, index) => {
                 const weight = records[date];
-                const previousWeight = records[dates[index - 1]];
-                const change = previousWeight !== undefined ? (weight - previousWeight).toFixed(1) : '-';
+                const previousWeight = records[dates[index + 1]]; // 上一个日期的体重
+                const change = previousWeight !== undefined ? (weight - previousWeight).toFixed(1) : '-'; // 计算变化
                 const formattedDate = formatDateWithWeekday(date);
 
                 const row = `
-                    <tr>
-                        <td>${formattedDate}</td>
-                        <td>${weight}</td>
-                        <td>${change}</td>
-                        <td class="actions">
-                            <button onclick="deleteRecord('${date}')">删除</button>
-                        </td>
-                    </tr>
-                `;
-                tableBody.innerHTML += row;
+            <tr>
+                <td>${formattedDate}</td>
+                <td>${weight}</td>
+                <td>${change}</td>
+                <td class="actions">
+                    <button onclick="deleteRecord('${date}')">删除</button>
+                </td>
+            </tr>
+        `;
+                tableBody.innerHTML += row; // 添加到表格中
             });
         }
+
 
         function filterRecordsByDateRange(startDate, endDate) {
             const filteredDates = Object.keys(records)
@@ -283,7 +285,10 @@
 
         function updateChangeSummary(startDate, endDate) {
             const { dates, weights } = filterRecordsByDateRange(startDate, endDate);
-            if (dates.length === 0) return;
+
+            if (weights.length === 0) {
+                return;
+            }
 
             const startWeight = records[dates[0]];
             const endWeight = records[dates[dates.length - 1]];
@@ -353,8 +358,8 @@
             });
         }
 
+        // Add event listeners
         document.getElementById('save-record').addEventListener('click', saveRecord);
-
         document.getElementById('filter-all').addEventListener('click', function () {
             updateChartWithFilter(null, null);
             updateChangeSummary(null, null);
@@ -400,9 +405,9 @@
         setDefaultDate();
         updateTitle();
         updateTable();
-        updateChartWithFilter(null, null);
-
+        updateChartWithFilter(null, null); // This makes the "所有天" button active by default
     </script>
 </body>
 
 </html>
+、
