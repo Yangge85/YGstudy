@@ -37,7 +37,6 @@
         .form-group input[type="number"],
         .form-group button {
             flex: 1 1 32%;
-            /* Each input/button takes 32% of the width */
             padding: 6px 10px;
             font-size: 14px;
             border: 1px solid #ccc;
@@ -68,7 +67,6 @@
         .filter-group button,
         .filter-group input[type="date"] {
             flex: 1 1 30%;
-            /* Flexible width with a max of 30% */
             font-size: 14px;
             padding: 4px 8px;
         }
@@ -118,7 +116,6 @@
             position: absolute;
             top: 20px;
             right: 20px;
-            /* 改为右上角 */
             padding: 5px 10px;
             background-color: #007bff;
             color: white;
@@ -172,9 +169,7 @@
             <button id="filter-custom">应用</button>
         </div>
 
-        <div class="change-summary" id="change-summary">
-            <!-- 显示体重变化的涨跌数据 -->
-        </div>
+        <div class="change-summary" id="change-summary"></div>
 
         <div class="chart-container">
             <canvas id="weight-chart" width="800" height="400"></canvas>
@@ -189,8 +184,7 @@
                     <th>操作</th>
                 </tr>
             </thead>
-            <tbody id="record-table">
-            </tbody>
+            <tbody id="record-table"></tbody>
         </table>
     </div>
 
@@ -198,10 +192,9 @@
         let records = JSON.parse(localStorage.getItem('weightRecords')) || {};
         let username = localStorage.getItem('username') || '';
 
-        // 设置日期输入框为今天的日期
         function setDefaultDate() {
             const today = new Date();
-            const dateString = today.toISOString().split('T')[0]; // 获取今天的日期
+            const dateString = today.toISOString().split('T')[0];
             document.getElementById('date').value = dateString;
             document.getElementById('custom-start').value = dateString;
             document.getElementById('custom-end').value = dateString;
@@ -216,7 +209,7 @@
             const date = new Date(dateString);
             const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
             const dayOfWeek = weekdays[date.getDay()];
-            return `${date.toISOString().split('T')[0]}（${dayOfWeek}）`;
+            return `${dateString}（${dayOfWeek}）`;
         }
 
         function saveRecord() {
@@ -237,6 +230,7 @@
             localStorage.setItem('weightRecords', JSON.stringify(records));
             updateTable();
             updateChartWithFilter(null, null);
+            updateChangeSummary(null, null); // 更新 "所有天" 的体重变化趋势
         }
 
         function deleteRecord(date) {
@@ -245,35 +239,32 @@
                 localStorage.setItem('weightRecords', JSON.stringify(records));
                 updateTable();
                 updateChartWithFilter(null, null);
+                updateChangeSummary(null, null); // 更新 "所有天" 的体重变化趋势
             }
         }
 
         function updateTable() {
             const tableBody = document.getElementById('record-table');
-            tableBody.innerHTML = ''; // 清空表格内容
-
-            // 按照日期降序排序
-            const dates = Object.keys(records).sort((a, b) => new Date(b) - new Date(a)); // 降序排列
+            tableBody.innerHTML = '';
+            const dates = Object.keys(records).sort((a, b) => new Date(b) - new Date(a));
             dates.forEach((date, index) => {
                 const weight = records[date];
-                const previousWeight = records[dates[index + 1]]; // 上一个日期的体重
-                const change = previousWeight !== undefined ? (weight - previousWeight).toFixed(1) : '-'; // 计算变化
+                const previousWeight = records[dates[index + 1]];
+                const change = previousWeight !== undefined ? (weight - previousWeight).toFixed(1) : '-';
                 const formattedDate = formatDateWithWeekday(date);
 
                 const row = `
-            <tr>
-                <td>${formattedDate}</td>
-                <td>${weight}</td>
-                <td>${change}</td>
-                <td class="actions">
-                    <button onclick="deleteRecord('${date}')">删除</button>
-                </td>
-            </tr>
-        `;
-                tableBody.innerHTML += row; // 添加到表格中
+                <tr>
+                    <td>${formattedDate}</td>
+                    <td>${weight}</td>
+                    <td>${change}</td>
+                    <td class="actions">
+                        <button onclick="deleteRecord('${date}')">删除</button>
+                    </td>
+                </tr>`;
+                tableBody.innerHTML += row;
             });
         }
-
 
         function filterRecordsByDateRange(startDate, endDate) {
             const filteredDates = Object.keys(records)
@@ -287,127 +278,122 @@
             const { dates, weights } = filterRecordsByDateRange(startDate, endDate);
 
             if (weights.length === 0) {
+                document.getElementById('change-summary').textContent = '没有记录显示。';
                 return;
             }
 
-            const startWeight = records[dates[0]];
-            const endWeight = records[dates[dates.length - 1]];
+            const firstDate = dates[0];
+            const lastDate = dates[dates.length - 1];
+            const startWeight = weights[0];
+            const endWeight = weights[weights.length - 1];
             const change = (endWeight - startWeight).toFixed(1);
 
-            const changeText = change > 0 ? `增加了 ${Math.abs(change)} kg` : `减少了 ${Math.abs(change)} kg`;
-            const changeElement = document.getElementById('change-summary');
-            changeElement.innerHTML = `
-                从 ${formatDateWithWeekday(dates[0])} 到 ${formatDateWithWeekday(dates[dates.length - 1])}，体重 ${changeText}
-                <i class="change-summary ${change > 0 ? 'increase' : 'decrease'}">${change > 0 ? '↑' : '↓'}</i>
-            `;
+            const changeText = change > 0
+                ? `<span class="increase">增加了 ${Math.abs(change)} kg</span>`
+                : `<span class="decrease">减少了 ${Math.abs(change)} kg</span>`;
+
+            const summaryText = `
+        从 ${formatDateWithWeekday(firstDate)} 到 ${formatDateWithWeekday(lastDate)}
+        <br>
+        体重 ${changeText}。
+    `;
+
+            document.getElementById('change-summary').innerHTML = summaryText;
         }
+
 
         function updateChartWithFilter(startDate, endDate) {
             const { dates, weights } = filterRecordsByDateRange(startDate, endDate);
-            const ctx = document.getElementById('weight-chart').getContext('2d');
-            if (window.chart) {
-                window.chart.destroy();
-            }
+            drawChart(dates, weights);
+        }
 
-            window.chart = new Chart(ctx, {
+        function drawChart(dates, weights) {
+            const ctx = document.getElementById('weight-chart').getContext('2d');
+            if (window.weightChart) {
+                window.weightChart.destroy();
+            }
+            window.weightChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: dates,
                     datasets: [{
-                        label: '体重变化 (kg)',
+                        label: '体重 (kg)',
                         data: weights,
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        fill: true
+                        borderColor: 'blue',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        fill: true,
+                        tension: 0.2
                     }]
                 },
                 options: {
                     responsive: true,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: '体重变化趋势'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function (tooltipItem) {
-                                    const currentWeight = tooltipItem.raw;
-                                    const prevWeight = weights[tooltipItem.dataIndex - 1];
-                                    let labelText = `体重: ${currentWeight} kg`;
-
-                                    // Check if the weight has increased or decreased
-                                    if (prevWeight !== undefined) {
-                                        const change = currentWeight - prevWeight;
-                                        if (change > 0) {
-                                            labelText += ` ↑ ${change.toFixed(1)} kg`; // Increased weight
-                                        } else if (change < 0) {
-                                            labelText += ` ↓ ${Math.abs(change).toFixed(1)} kg`; // Decreased weight
-                                        }
-                                    }
-                                    return labelText;
-                                }
-                            }
-                        }
-                    },
                     scales: {
-                        y: {
-                            beginAtZero: false
-                        }
+                        x: { title: { display: true, text: '日期' } },
+                        y: { title: { display: true, text: '体重 (kg)' } }
                     }
                 }
             });
         }
 
-        // Add event listeners
-        document.getElementById('save-record').addEventListener('click', saveRecord);
-        document.getElementById('filter-all').addEventListener('click', function () {
+        function setFilterButtons() {
+            document.getElementById('filter-all').addEventListener('click', () => {
+                updateChartWithFilter(null, null);
+                updateChangeSummary(null, null);
+            });
+
+            document.getElementById('filter-7').addEventListener('click', () => {
+                const endDate = new Date().toISOString().split('T')[0];
+                const startDate = new Date(new Date().setDate(new Date().getDate() - 7)).toISOString().split('T')[0];
+                updateChartWithFilter(startDate, endDate);
+                updateChangeSummary(startDate, endDate);
+            });
+
+            document.getElementById('filter-30').addEventListener('click', () => {
+                const endDate = new Date().toISOString().split('T')[0];
+                const startDate = new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0];
+                updateChartWithFilter(startDate, endDate);
+                updateChangeSummary(startDate, endDate);
+            });
+
+            document.getElementById('filter-custom').addEventListener('click', () => {
+                const startDate = document.getElementById('custom-start').value;
+                const endDate = document.getElementById('custom-end').value;
+                updateChartWithFilter(startDate, endDate);
+                updateChangeSummary(startDate, endDate);
+            });
+        }
+
+        function setupUsernameFeature() {
+            const usernameContainer = document.getElementById('username-container');
+            const toggleButton = document.getElementById('toggle-username');
+
+            toggleButton.addEventListener('click', () => {
+                usernameContainer.style.display = usernameContainer.style.display === 'none' ? 'block' : 'none';
+            });
+
+            document.getElementById('set-username').addEventListener('click', () => {
+                username = document.getElementById('username').value.trim();
+                if (username) {
+                    localStorage.setItem('username', username);
+                    updateTitle();
+                    usernameContainer.style.display = 'none';
+                }
+            });
+        }
+
+        function initialize() {
+            updateTitle();
+            setDefaultDate();
+            updateTable();
             updateChartWithFilter(null, null);
             updateChangeSummary(null, null);
-        });
+            setFilterButtons();
+            setupUsernameFeature();
+        }
 
-        document.getElementById('filter-7').addEventListener('click', function () {
-            const endDate = new Date();
-            const startDate = new Date();
-            startDate.setDate(endDate.getDate() - 6);
-            updateChartWithFilter(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]);
-            updateChangeSummary(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]);
-        });
-
-        document.getElementById('filter-30').addEventListener('click', function () {
-            const endDate = new Date();
-            const startDate = new Date();
-            startDate.setDate(endDate.getDate() - 29);
-            updateChartWithFilter(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]);
-            updateChangeSummary(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]);
-        });
-
-        document.getElementById('filter-custom').addEventListener('click', function () {
-            const startDate = document.getElementById('custom-start').value;
-            const endDate = document.getElementById('custom-end').value;
-            updateChartWithFilter(startDate, endDate);
-            updateChangeSummary(startDate, endDate);
-        });
-
-        document.getElementById('toggle-username').addEventListener('click', function () {
-            const usernameContainer = document.getElementById('username-container');
-            usernameContainer.style.display = usernameContainer.style.display === 'none' ? 'block' : 'none';
-        });
-
-        document.getElementById('set-username').addEventListener('click', function () {
-            username = document.getElementById('username').value.trim();
-            if (username) {
-                localStorage.setItem('username', username);
-                updateTitle();
-                document.getElementById('username-container').style.display = 'none';
-            }
-        });
-
-        setDefaultDate();
-        updateTitle();
-        updateTable();
-        updateChartWithFilter(null, null); // This makes the "所有天" button active by default
+        document.getElementById('save-record').addEventListener('click', saveRecord);
+        initialize();
     </script>
 </body>
 
 </html>
-、
