@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>得分记录</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        button,
+        select {
+            padding: 5px 10px;
+            cursor: pointer;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 3px;
+        }
+
+        button:hover,
+        select:hover {
+            background-color: #0056b3;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 80px;
+            padding: 5px;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>得分记录</h1>
+    <label for="displayCount">选择显示记录人数：</label>
+    <select id="displayCount" onchange="updateDisplayCount()">
+        <option value="1">1人</option>
+        <option value="2">2人</option>
+        <option value="3">3人</option>
+        <option value="4" selected>4人</option>
+    </select>
+    <button onclick="resetAll()">重置所有记录</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>姓名</th>
+                <th>加分</th>
+                <th>减分</th>
+                <th>总分</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="scoreTable">
+            <!-- 动态生成 -->
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3">所有总分之和</td>
+                <td id="totalSum">0</td>
+                <td id="checkError"></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <script>
+        const maxPlayers = 4;
+        const playerNames = ["高雯", "高洋", "高习", "杜阳", "老太太"];
+        const records = Array.from({ length: maxPlayers }, () => []);
+        const history = Array.from({ length: maxPlayers }, () => []);
+        const localStorageKey = "scoreRecords";
+        const displayCountKey = "displayCount";
+
+        function initializeTable() {
+            const tableBody = document.getElementById("scoreTable");
+            for (let i = 1; i <= maxPlayers; i++) {
+                tableBody.innerHTML += `
+          <tr data-id="${i}">
+            <td>
+              <select id="nameSelect${i}" onchange="saveToLocalStorage()">
+                ${playerNames.map((name, index) => `<option value="${name}">${name}</option>`).join('')}
+              </select>
+            </td>
+            <td><input type="number" min="0" id="addScore${i}"></td>
+            <td><input type="number" min="0" id="subtractScore${i}"></td>
+            <td id="totalScore${i}">0</td>
+            <td>
+              <button onclick="updateScore(${i})">更新</button>
+              <button onclick="undoLast(${i})">恢复</button>
+            </td>
+          </tr>
+          <tr class="recordRow hidden" id="recordRow${i}">
+            <td colspan="5">记录：<span id="recordList${i}"></span></td>
+          </tr>`;
+            }
+            loadFromLocalStorage();
+        }
+
+        function loadFromLocalStorage() {
+            const data = JSON.parse(localStorage.getItem(localStorageKey));
+            if (data) {
+                for (let i = 0; i < maxPlayers; i++) {
+                    document.getElementById(`nameSelect${i + 1}`).value = data.names[i] || playerNames[i];
+                    records[i].push(...data.records[i]);
+                    history[i].push(...data.history[i]);
+                    updateScoreDisplay(i + 1);
+                }
+            } else {
+                // 设置默认名字（前4个玩家）
+                for (let i = 0; i < maxPlayers; i++) {
+                    document.getElementById(`nameSelect${i + 1}`).value = playerNames[i];
+                }
+            }
+
+            const savedDisplayCount = localStorage.getItem(displayCountKey);
+            if (savedDisplayCount) {
+                document.getElementById("displayCount").value = savedDisplayCount;
+                updateDisplayCount();
+            } else {
+                updateDisplayCount(); // 默认显示全部
+            }
+        }
+
+        function updateScore(id) {
+            const addInput = document.getElementById(`addScore${id}`);
+            const subtractInput = document.getElementById(`subtractScore${id}`);
+            const addScore = parseInt(addInput.value) || 0;
+            const subtractScore = parseInt(subtractInput.value) || 0;
+            const currentTotal = parseInt(document.getElementById(`totalScore${id}`).textContent) || 0;
+
+            const newTotal = currentTotal + addScore - subtractScore;
+            history[id - 1].push(newTotal);
+            records[id - 1].push(`+${addScore} -${subtractScore} = ${newTotal}`);
+
+            updateScoreDisplay(id);
+            saveToLocalStorage();
+
+            addInput.value = '';
+            subtractInput.value = '';
+        }
+
+        function undoLast(id) {
+            if (confirm("确定要恢复上一条记录吗？")) {
+                if (history[id - 1].length > 1) {
+                    history[id - 1].pop();
+                    records[id - 1].pop();
+                    updateScoreDisplay(id);
+                    saveToLocalStorage();
+                } else {
+                    alert("没有可恢复的记录！");
+                }
+            }
+        }
+
+        function updateScoreDisplay(id) {
+            const recordList = document.getElementById(`recordList${id}`);
+            const totalCell = document.getElementById(`totalScore${id}`);
+            const total = history[id - 1].length > 0 ? history[id - 1][history[id - 1].length - 1] : 0;
+
+            totalCell.textContent = total;
+            recordList.textContent = records[id - 1].join(" | ");
+            updateTotalSum();
+        }
+
+        function updateTotalSum() {
+            let totalSum = 0;
+            for (let i = 1; i <= maxPlayers; i++) {
+                totalSum += parseInt(document.getElementById(`totalScore${i}`).textContent) || 0;
+            }
+            document.getElementById("totalSum").textContent = totalSum;
+            document.getElementById("checkError").textContent = totalSum === 0 ? "记录正确" : "记录错误";
+        }
+
+        function updateDisplayCount() {
+            const displayCount = parseInt(document.getElementById("displayCount").value);
+            for (let i = 1; i <= maxPlayers; i++) {
+                const row = document.querySelector(`[data-id="${i}"]`);
+                const recordRow = document.getElementById(`recordRow${i}`);
+                if (i <= displayCount) {
+                    row.classList.remove("hidden");
+                    recordRow.classList.remove("hidden");
+                } else {
+                    row.classList.add("hidden");
+                    recordRow.classList.add("hidden");
+                }
+            }
+            saveDisplayCountToLocalStorage();
+        }
+
+        function saveToLocalStorage() {
+            const names = Array.from({ length: maxPlayers }, (_, i) =>
+                document.getElementById(`nameSelect${i + 1}`).value
+            );
+            localStorage.setItem(localStorageKey, JSON.stringify({ names, records, history }));
+        }
+
+        function saveDisplayCountToLocalStorage() {
+            const displayCount = document.getElementById("displayCount").value;
+            localStorage.setItem(displayCountKey, displayCount);
+        }
+
+        function resetAll() {
+            localStorage.removeItem(localStorageKey);
+            localStorage.removeItem(displayCountKey);
+            location.reload();
+        }
+
+        initializeTable();
+    </script>
+</body>
+
+</html>
