@@ -8,20 +8,21 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 10px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         th,
         td {
             border: 1px solid #ccc;
-            padding: 10px;
+            padding: 5px;
             text-align: center;
+            font-size: 14px;
         }
 
         th {
@@ -30,12 +31,13 @@
 
         button,
         select {
-            padding: 5px 10px;
+            padding: 5px;
             cursor: pointer;
             border: none;
             background-color: #007bff;
             color: #fff;
             border-radius: 3px;
+            font-size: 14px;
         }
 
         button:hover,
@@ -45,13 +47,74 @@
 
         input[type="text"],
         input[type="number"] {
-            width: 80px;
-            padding: 5px;
+            width: 50px;
+            padding: 3px;
             text-align: center;
+            font-size: 14px;
         }
 
         .hidden {
             display: none;
+        }
+
+        h1 {
+            font-size: 18px;
+            text-align: center;
+        }
+
+        label {
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            table {
+                font-size: 12px;
+            }
+
+            button,
+            select {
+                font-size: 12px;
+                padding: 3px;
+            }
+
+            input[type="text"],
+            input[type="number"] {
+                width: 40px;
+                font-size: 12px;
+            }
+
+            th,
+            td {
+                padding: 5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 16px;
+            }
+
+            label {
+                font-size: 12px;
+            }
+
+            th,
+            td {
+                font-size: 12px;
+                padding: 3px;
+            }
+
+            button,
+            select {
+                font-size: 10px;
+                padding: 2px;
+            }
+
+            input[type="text"],
+            input[type="number"] {
+                width: 35px;
+                font-size: 10px;
+            }
         }
     </style>
 </head>
@@ -132,7 +195,6 @@
                     updateScoreDisplay(i + 1);
                 }
             } else {
-                // 设置默认名字（前4个玩家）
                 for (let i = 0; i < maxPlayers; i++) {
                     document.getElementById(`nameSelect${i + 1}`).value = playerNames[i];
                 }
@@ -143,7 +205,7 @@
                 document.getElementById("displayCount").value = savedDisplayCount;
                 updateDisplayCount();
             } else {
-                updateDisplayCount(); // 默认显示全部
+                updateDisplayCount();
             }
         }
 
@@ -210,28 +272,28 @@
                     recordRow.classList.add("hidden");
                 }
             }
-            saveDisplayCountToLocalStorage();
+            saveToLocalStorage();
         }
 
         function saveToLocalStorage() {
-            const names = Array.from({ length: maxPlayers }, (_, i) =>
-                document.getElementById(`nameSelect${i + 1}`).value
-            );
-            localStorage.setItem(localStorageKey, JSON.stringify({ names, records, history }));
-        }
-
-        function saveDisplayCountToLocalStorage() {
-            const displayCount = document.getElementById("displayCount").value;
-            localStorage.setItem(displayCountKey, displayCount);
+            const data = {
+                names: Array.from({ length: maxPlayers }, (_, i) => document.getElementById(`nameSelect${i + 1}`).value),
+                records: records,
+                history: history,
+            };
+            localStorage.setItem(localStorageKey, JSON.stringify(data));
+            localStorage.setItem(displayCountKey, document.getElementById("displayCount").value);
         }
 
         function resetAll() {
-            localStorage.removeItem(localStorageKey);
-            localStorage.removeItem(displayCountKey);
-            location.reload();
+            if (confirm("确定要重置所有记录吗？")) {
+                localStorage.removeItem(localStorageKey);
+                localStorage.removeItem(displayCountKey);
+                location.reload();
+            }
         }
 
-        initializeTable();
+        window.onload = initializeTable;
     </script>
 </body>
 
