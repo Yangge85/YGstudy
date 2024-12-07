@@ -168,7 +168,11 @@
             <input type="date" id="custom-end" />
             <button id="filter-custom">应用</button>
         </div>
+        <div class="filter-group">
+            <button id="filter-period-1">第一期：2024-11-10 到 2024-12-9</button>
+            <button id="filter-period-2">第二期：2024-12-10 到 2025-1-9</button>
 
+        </div>
         <div class="change-summary" id="change-summary"></div>
 
         <div class="chart-container">
@@ -299,6 +303,15 @@
     `;
 
             document.getElementById('change-summary').innerHTML = summaryText;
+            const changeSummary = document.getElementById('change-summary');
+
+            if (percentageChange > 0) {
+                changeSummary.innerHTML = `<i>📈</i> <span class="increase">${changeText}</span>`;
+            } else if (percentageChange < 0) {
+                changeSummary.innerHTML = `<i>📉</i> <span class="decrease">${changeText}</span>`;
+            } else {
+                changeSummary.innerHTML = `<i>➖</i> ${changeText}`;
+            }
         }
 
 
@@ -393,7 +406,52 @@
 
         document.getElementById('save-record').addEventListener('click', saveRecord);
         initialize();
+        function updateChangeSummary(startDate, endDate) {
+            const { dates, weights } = filterRecordsByDateRange(startDate, endDate);
+
+            if (weights.length === 0) {
+                document.getElementById('change-summary').textContent = '没有记录显示。';
+                return;
+            }
+
+            const firstDate = dates[0];
+            const lastDate = dates[dates.length - 1];
+            const startWeight = weights[0];
+            const endWeight = weights[weights.length - 1];
+            const change = (endWeight - startWeight).toFixed(1);
+
+            const percentageChange = ((endWeight - startWeight) / startWeight * 100).toFixed(1); // 计算百分比变化
+
+            // 定义体重变化的文本
+            const changeText = change > 0
+                ? `<span class="increase">增加了 ${Math.abs(change)} kg (${Math.abs(percentageChange)}%)</span>`
+                : `<span class="decrease">减少了 ${Math.abs(change)} kg (${Math.abs(percentageChange)}%)</span>`;
+
+            const summaryText = `
+        从 ${formatDateWithWeekday(firstDate)} 到 ${formatDateWithWeekday(lastDate)}
+        <br>
+        体重 ${changeText}。
+    `;
+
+            document.getElementById('change-summary').innerHTML = summaryText;
+        }
+
+        document.getElementById('filter-period-1').addEventListener('click', () => {
+            const startDate = '2024-11-10';
+            const endDate = '2024-12-09';
+            updateChartWithFilter(startDate, endDate);
+            updateChangeSummary(startDate, endDate);
+        });
+
+        document.getElementById('filter-period-2').addEventListener('click', () => {
+            const startDate = '2024-12-10';
+            const endDate = '2025-01-09';
+            updateChartWithFilter(startDate, endDate);
+            updateChangeSummary(startDate, endDate);
+        });
+
     </script>
+
 </body>
 
 </html>
