@@ -136,6 +136,59 @@
         .change-summary i {
             font-size: 18px;
         }
+
+        #page-title {
+            font-size: 24px;
+            /* 标题的字体大小，适中即可 */
+            font-weight: 300;
+            /* 字体粗细，稍微加粗 */
+            color: #ffffff;
+            /* 默认字体颜色为白色 */
+            text-align: center;
+            /* 居中显示标题 */
+            text-shadow:
+                0 0 2px #ffffff,
+                /* 外围第一层白色光影，轻微柔和 */
+                0 0 4px #ff66cc,
+                /* 第二层粉色光影，增加深度 */
+                0 0 6px #ff66cc;
+            /* 最外层粉色光影，稍微扩散 */
+            animation: soft-neon 2s ease-in-out infinite alternate;
+            /* 霓虹灯变色动画 */
+        }
+
+        /* 定义霓虹灯光动画 */
+        @keyframes soft-neon {
+            0% {
+                text-shadow:
+                    0 0 2px #ffffff,
+                    0 0 4px #ff66cc,
+                    0 0 6px #ff66cc;
+                /* 粉色光 */
+                color: #ff66cc;
+                /* 字体为粉色 */
+            }
+
+            50% {
+                text-shadow:
+                    0 0 2px #ffffff,
+                    0 0 4px #66ccff,
+                    0 0 6px #66ccff;
+                /* 蓝色光 */
+                color: #66ccff;
+                /* 字体为蓝色 */
+            }
+
+            100% {
+                text-shadow:
+                    0 0 2px #ffffff,
+                    0 0 4px #66ff66,
+                    0 0 6px #66ff66;
+                /* 绿色光 */
+                color: #66ff66;
+                /* 字体为绿色 */
+            }
+        }
     </style>
 </head>
 
