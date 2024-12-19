@@ -170,7 +170,7 @@
         </div>
         <div class="filter-group">
             <button id="filter-period-1">第一期：2024-11-10 到 2024-12-9</button>
-            <button id="filter-period-2">第二期：2024-12-10 到 2025-1-9</button>
+            <button id="filter-period-2">第二期：2024-12-10 到 2025-1-19</button>
 
         </div>
         <div class="change-summary" id="change-summary"></div>
@@ -305,13 +305,13 @@
             document.getElementById('change-summary').innerHTML = summaryText;
             const changeSummary = document.getElementById('change-summary');
 
-            if (percentageChange > 0) {
-                changeSummary.innerHTML = `<i>📈</i> <span class="increase">${changeText}</span>`;
-            } else if (percentageChange < 0) {
-                changeSummary.innerHTML = `<i>📉</i> <span class="decrease">${changeText}</span>`;
-            } else {
-                changeSummary.innerHTML = `<i>➖</i> ${changeText}`;
-            }
+            // if (percentageChange > 0) {
+            //     changeSummary.innerHTML = `<i>📈</i> <span class="increase">${changeText}</span>`;
+            // } else if (percentageChange < 0) {
+            //     changeSummary.innerHTML = `<i>📉</i> <span class="decrease">${changeText}</span>`;
+            // } else {
+            //     changeSummary.innerHTML = `<i>➖</i> ${changeText}`;
+            // }
         }
 
 
@@ -332,10 +332,17 @@
                     datasets: [{
                         label: '体重 (kg)',
                         data: weights,
-                        borderColor: 'blue',
-                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        borderColor: 'red',
+                        borderWidth: 1, // 设置折线的粗细
+                        backgroundColor: 'rgba(255, 0, 0, 0.3)',
                         fill: true,
-                        tension: 0.2
+                        tension: 0.2,
+                        pointStyle: 'circle', // 设置点的样式为圆形
+                        pointBackgroundColor: 'red', // 设置点的背景颜色，与折线颜色一致
+                        pointBorderColor: 'red', // 设置点的边框颜色，与折线颜色一致
+                        pointBorderWidth: 1, // 设置点的边框宽度
+                        pointRadius: 2, // 设置点的半径大小
+                        pointHoverRadius: 6 // 设置鼠标悬停时点的半径大小
                     }]
                 },
                 options: {
@@ -424,8 +431,8 @@
 
             // 定义体重变化的文本
             const changeText = change > 0
-                ? `<span class="increase">增加了 ${Math.abs(change)} kg (${Math.abs(percentageChange)}%)</span>`
-                : `<span class="decrease">减少了 ${Math.abs(change)} kg (${Math.abs(percentageChange)}%)</span>`;
+                ? `<span class="increase">📈增加了 ${Math.abs(change)} kg (${Math.abs(percentageChange)}%)📈</span>`
+                : `<span class="decrease">📉减少了 ${Math.abs(change)} kg (${Math.abs(percentageChange)}%)📉</span>`;
 
             const summaryText = `
         从 ${formatDateWithWeekday(firstDate)} 到 ${formatDateWithWeekday(lastDate)}
@@ -445,7 +452,7 @@
 
         document.getElementById('filter-period-2').addEventListener('click', () => {
             const startDate = '2024-12-10';
-            const endDate = '2025-01-09';
+            const endDate = '2025-01-19';
             updateChartWithFilter(startDate, endDate);
             updateChangeSummary(startDate, endDate);
         });
