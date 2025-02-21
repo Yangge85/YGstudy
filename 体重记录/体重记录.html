@@ -194,7 +194,7 @@
         <div class="filter-group">
             <button id="filter-period-1">第一期：2024-11-10 到 2024-12-9</button>
             <button id="filter-period-2">第二期：2024-12-10 到 2025-1-19</button>
-
+            <button id="filter-period-3">第三期：2025-2-23 到 2025-3-1</button>
         </div>
         <div class="change-summary" id="change-summary"></div>
 
@@ -314,10 +314,12 @@
             const startWeight = weights[0];
             const endWeight = weights[weights.length - 1];
             const change = (endWeight - startWeight).toFixed(1);
+            const percentageChange = ((endWeight - startWeight) / startWeight * 100).toFixed(1); // 计算百分比变化
 
+            // 定义体重变化的文本
             const changeText = change > 0
-                ? `<span class="increase">增加了 ${Math.abs(change)} kg</span>`
-                : `<span class="decrease">减少了 ${Math.abs(change)} kg</span>`;
+                ? `<span class="increase">📈增加了 ${Math.abs(change)} kg (${Math.abs(percentageChange)}%)📈</span>`
+                : `<span class="decrease">📉减少了 ${Math.abs(change)} kg (${Math.abs(percentageChange)}%)📉</span>`;
 
             const summaryText = `
         从 ${formatDateWithWeekday(firstDate)} 到 ${formatDateWithWeekday(lastDate)}
@@ -326,15 +328,6 @@
     `;
 
             document.getElementById('change-summary').innerHTML = summaryText;
-            const changeSummary = document.getElementById('change-summary');
-
-            // if (percentageChange > 0) {
-            //     changeSummary.innerHTML = `<i>📈</i> <span class="increase">${changeText}</span>`;
-            // } else if (percentageChange < 0) {
-            //     changeSummary.innerHTML = `<i>📉</i> <span class="decrease">${changeText}</span>`;
-            // } else {
-            //     changeSummary.innerHTML = `<i>➖</i> ${changeText}`;
-            // }
         }
 
 
@@ -356,16 +349,16 @@
                         label: '体重 (kg)',
                         data: weights,
                         borderColor: 'red',
-                        borderWidth: 1, // 设置折线的粗细
+                        borderWidth: 1,
                         backgroundColor: 'rgba(255, 0, 0, 0.3)',
                         fill: true,
                         tension: 0.2,
-                        pointStyle: 'circle', // 设置点的样式为圆形
-                        pointBackgroundColor: 'red', // 设置点的背景颜色，与折线颜色一致
-                        pointBorderColor: 'red', // 设置点的边框颜色，与折线颜色一致
-                        pointBorderWidth: 1, // 设置点的边框宽度
-                        pointRadius: 2, // 设置点的半径大小
-                        pointHoverRadius: 6 // 设置鼠标悬停时点的半径大小
+                        pointStyle: 'circle',
+                        pointBackgroundColor: 'red',
+                        pointBorderColor: 'red',
+                        pointBorderWidth: 1,
+                        pointRadius: 2,
+                        pointHoverRadius: 6
                     }]
                 },
                 options: {
@@ -436,35 +429,6 @@
 
         document.getElementById('save-record').addEventListener('click', saveRecord);
         initialize();
-        function updateChangeSummary(startDate, endDate) {
-            const { dates, weights } = filterRecordsByDateRange(startDate, endDate);
-
-            if (weights.length === 0) {
-                document.getElementById('change-summary').textContent = '没有记录显示。';
-                return;
-            }
-
-            const firstDate = dates[0];
-            const lastDate = dates[dates.length - 1];
-            const startWeight = weights[0];
-            const endWeight = weights[weights.length - 1];
-            const change = (endWeight - startWeight).toFixed(1);
-
-            const percentageChange = ((endWeight - startWeight) / startWeight * 100).toFixed(1); // 计算百分比变化
-
-            // 定义体重变化的文本
-            const changeText = change > 0
-                ? `<span class="increase">📈增加了 ${Math.abs(change)} kg (${Math.abs(percentageChange)}%)📈</span>`
-                : `<span class="decrease">📉减少了 ${Math.abs(change)} kg (${Math.abs(percentageChange)}%)📉</span>`;
-
-            const summaryText = `
-        从 ${formatDateWithWeekday(firstDate)} 到 ${formatDateWithWeekday(lastDate)}
-        <br>
-        体重 ${changeText}。
-    `;
-
-            document.getElementById('change-summary').innerHTML = summaryText;
-        }
 
         document.getElementById('filter-period-1').addEventListener('click', () => {
             const startDate = '2024-11-10';
@@ -476,6 +440,13 @@
         document.getElementById('filter-period-2').addEventListener('click', () => {
             const startDate = '2024-12-10';
             const endDate = '2025-01-19';
+            updateChartWithFilter(startDate, endDate);
+            updateChangeSummary(startDate, endDate);
+        });
+
+        document.getElementById('filter-period-3').addEventListener('click', () => {
+            const startDate = '2025-02-23';
+            const endDate = '2025-03-01';
             updateChartWithFilter(startDate, endDate);
             updateChangeSummary(startDate, endDate);
         });
