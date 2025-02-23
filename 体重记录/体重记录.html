@@ -194,7 +194,7 @@
         <div class="filter-group">
             <button id="filter-period-1">第一期：2024-11-10 到 2024-12-9</button>
             <button id="filter-period-2">第二期：2024-12-10 到 2025-1-19</button>
-            <button id="filter-period-3">第三期：2025-2-23 到 2025-3-1</button>
+            <button id="filter-period-3">第三期：2025-2-24 到 2025-3-2</button>
         </div>
         <div class="change-summary" id="change-summary"></div>
 
@@ -445,8 +445,8 @@
         });
 
         document.getElementById('filter-period-3').addEventListener('click', () => {
-            const startDate = '2025-02-23';
-            const endDate = '2025-03-01';
+            const startDate = '2025-02-24';
+            const endDate = '2025-03-02';
             updateChartWithFilter(startDate, endDate);
             updateChangeSummary(startDate, endDate);
         });
