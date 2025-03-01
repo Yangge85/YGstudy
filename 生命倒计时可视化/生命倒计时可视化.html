@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>生命倒计时可视化</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+
+        .config-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .member-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(30, 12px);
+            gap: 1px;
+            margin-top: 10px;
+        }
+
+        .cell {
+            width: 12px;
+            height: 12px;
+            background-color: #eee;
+            border-radius: 2px;
+            transition: background-color 0.3s;
+        }
+
+        .cell.lived {
+            background-color: #ff4444;
+        }
+
+        .cell.remaining {
+            background-color: #4CAF50;
+        }
+
+        .member-header {
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .member-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .member-stats {
+            font-size: 0.9em;
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 3px 8px;
+            cursor: pointer;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="number"] {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 180px;
+        }
+
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #1976D2;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 15% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .select-container {
+            margin: 15px 0;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        #activitiesList {
+            margin-top: 20px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            padding: 8px;
+            background: #f8f8f8;
+            border-radius: 4px;
+        }
+
+        .activity-info {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .emotional-text {
+            color: #666;
+            font-style: italic;
+            margin: 15px 0;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        #summaryResult {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+
+        .discount-notice {
+            color: #666;
+            font-size: 0.9em;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f8f8;
+            border-radius: 4px;
+        }
+
+        .result-item {
+            padding: 8px;
+            margin: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>如果可以活<span id="totalMonthsDisplay">0</span>个月，你该如何度过？</h1>
+
+    <div class="config-panel">
+
+        <h3>全局设置</h3>
+        <input type="number" id="totalMonths" min="1" value="900" placeholder="总月数">
+        <button onclick="updateTotalMonths()">更新月数</button>
+
+        <h3 style="margin-top:20px;">添加新成员</h3>
+        <input type="text" id="newName" placeholder="姓名">
+        <input type="date" id="newBirthday">
+        <button onclick="addMember()">添加成员</button>
+
+        <h3 style="margin-top:20px;">自定义活动设置</h3>
+        <input type="text" id="activityName" placeholder="活动名称">
+        <select id="activityType">
+            <option value="monthly">每月次数</option>
+            <option value="yearly">每年次数</option>
+            <option value="daily">每天次数</option>
+        </select>
+        <input type="number" id="activityValue" min="1" value="1" style="width: 100px;">
+        <button onclick="addActivity()">添加活动</button>
+        <button onclick="calculateAllActivities()" style="background:#9C27B0; margin-bottom:15px;">🌟 整体计算所有活动</button>
+
+        <div id="activitiesList"></div>
+    </div>
+
+    <div class="container" id="membersContainer"></div>
+
+    <!-- 单个活动计算模态框 -->
+    <div id="calculationModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3>选择两个成员</h3>
+            <div class="select-container">
+                <select id="member1Select"></select>
+                <select id="member2Select"></select>
+            </div>
+            <button onclick="calculateActivity()" style="margin-top: 10px;">计算</button>
+            <div id="calculationResult" style="margin-top: 15px; font-weight: bold;"></div>
+            <div class="emotional-text">
+                ⏳ 时光易逝，珍惜每个相处的瞬间<br>
+                ❤️ 真正的陪伴从不在次数多少
+            </div>
+        </div>
+    </div>
+
+    <!-- 整体计算模态框 -->
+    <div id="summaryModal" class="modal">
+        <div class="modal-content" style="max-width:800px;">
+            <span class="close" onclick="closeSummaryModal()">&times;</span>
+            <h3>所有活动计算结果</h3>
+            <div class="discount-notice">
+                * 已考虑年龄因素：60岁后每年有效时间减少10%<br>
+                * 计算结果为理论最大值，实际次数可能更少<br>
+                * 每月按30天估算，实际天数可能有所不同
+            </div>
+            <div id="summaryResult"></div>
+            <div class="emotional-text">
+                🌟 人生最珍贵的从来不是数字<br>
+                🍚 珍惜每次一起吃饭的时光<br>
+                🎮 享受共同游戏的快乐时刻<br>
+                ⏳ 我们都将老去，但回忆永远年轻
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let appConfig = {
+            totalMonths: 900,
+            members: [],
+            activities: []
+        };
+
+        // 初始化
+        function init() {
+            const savedData = localStorage.getItem('lifeCalendar');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                appConfig.totalMonths = data.totalMonths || 900;
+                appConfig.members = data.members || [];
+                appConfig.activities = data.activities || [];
+            }
+
+            document.getElementById('totalMonths').value = appConfig.totalMonths;
+            updateTitle();
+            renderMembers();
+            renderActivities();
+        }
+
+        // 更新总月数
+        function updateTotalMonths() {
+            const newTotal = parseInt(document.getElementById('totalMonths').value);
+            if (newTotal > 0) {
+                appConfig.totalMonths = newTotal;
+                saveData();
+                updateTitle();
+                renderMembers();
+            }
+        }
+
+        function updateTitle() {
+            document.getElementById('totalMonthsDisplay').textContent = appConfig.totalMonths;
+        }
+
+        function saveData() {
+            localStorage.setItem('lifeCalendar', JSON.stringify(appConfig));
+        }
+
+        // 生命周期网格计算
+        function createLifeGrid(birthday) {
+            const today = new Date();
+            const birthDate = new Date(birthday);
+
+            const livedMonths = (today.getFullYear() - birthDate.getFullYear()) * 12
+                + today.getMonth() - birthDate.getMonth();
+
+            const remaining = Math.max(appConfig.totalMonths - livedMonths, 0);
+            const livedPercent = ((livedMonths / appConfig.totalMonths) * 100).toFixed(1);
+            const remainingPercent = ((remaining / appConfig.totalMonths) * 100).toFixed(1);
+
+            return { livedMonths, remaining, livedPercent, remainingPercent };
+        }
+
+        // 创建成员卡片
+        function createMemberCard(member) {
+            const { livedMonths, remaining, livedPercent, remainingPercent } = createLifeGrid(member.birthday);
+
+            const card = document.createElement('div');
+            card.className = 'member-card';
+            card.innerHTML = `
+                <button class="delete-btn" onclick="deleteMember('${member.id}')">×</button>
+                <div class="member-header">
+                    <div class="member-name">${member.name}</div>
+                    <div class="member-stats">生日：${member.birthday}</div>
+                    <div class="member-stats">已度过：${livedMonths}个月 (${livedPercent}%)</div>
+                    <div class="member-stats">剩余：${remaining}个月 (${remainingPercent}%)</div>
+                </div>
+                <div class="grid"></div>
+            `;
+
+            const grid = card.querySelector('.grid');
+            grid.style.gridTemplateColumns = `repeat(30, ${12}px)`;
+
+            for (let i = 0; i < appConfig.totalMonths; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell ' + (i < livedMonths ? 'lived' : 'remaining');
+                grid.appendChild(cell);
+            }
+
+            return card;
+        }
+
+        function renderMembers() {
+            const container = document.getElementById('membersContainer');
+            container.innerHTML = '';
+            appConfig.members.forEach(member => container.appendChild(createMemberCard(member)));
+        }
+
+        function addMember() {
+            const name = document.getElementById('newName').value;
+            const birthday = document.getElementById('newBirthday').value;
+            const today = new Date();
+
+            if (!name || !birthday) {
+                alert('请填写完整信息');
+                return;
+            }
+
+            const birthDate = new Date(birthday);
+            if (birthDate > today) {
+                alert('生日不能晚于今天');
+                return;
+            }
+
+            appConfig.members.push({
+                id: Date.now().toString(),
+                name,
+                birthday
+            });
+
+            saveData();
+            renderMembers();
+            document.getElementById('newName').value = '';
+            document.getElementById('newBirthday').value = '';
+        }
+
+        function deleteMember(id) {
+            appConfig.members = appConfig.members.filter(member => member.id !== id);
+            saveData();
+            renderMembers();
+        }
+
+        // 活动管理功能
+        function addActivity() {
+            const name = document.getElementById('activityName').value;
+            const type = document.getElementById('activityType').value;
+            const value = parseInt(document.getElementById('activityValue').value);
+
+            if (!name || !value || value < 1) {
+                alert('请填写有效的活动信息');
+                return;
+            }
+
+            appConfig.activities.push({
+                id: Date.now().toString(),
+                name,
+                type,
+                value
+            });
+
+            saveData();
+            renderActivities();
+            document.getElementById('activityName').value = '';
+            document.getElementById('activityValue').value = 1;
+        }
+
+        function deleteActivity(id) {
+            appConfig.activities = appConfig.activities.filter(a => a.id !== id);
+            saveData();
+            renderActivities();
+        }
+
+        function renderActivities() {
+            const container = document.getElementById('activitiesList');
+            container.innerHTML = '';
+            appConfig.activities.forEach(activity => {
+                const div = document.createElement('div');
+                div.className = 'activity-item';
+                div.innerHTML = `
+                    <div class="activity-info">
+                        ${activity.name} 
+                        (${getActivityDesc(activity)})
+                    </div>
+                    <button onclick="showCalculation('${activity.id}')" style="margin-right:5px;">计算</button>
+                    <button onclick="deleteActivity('${activity.id}')">删除</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function getActivityDesc(activity) {
+            const typeMap = {
+                monthly: `每月${activity.value}次`,
+                yearly: `每年${activity.value}次`,
+                daily: `每天${activity.value}次`
+            };
+            return typeMap[activity.type];
+        }
+
+        // 年龄折扣计算
+        function calculateAgeDiscount(birthDate) {
+            const today = new Date();
+            const age = today.getFullYear() - birthDate.getFullYear();
+            if (age <= 60) return 1.0;
+            const overYears = age - 60;
+            return Math.max(1 - (overYears * 0.1), 0.5);
+        }
+
+        // 单个活动计算
+        let currentActivity = null;
+        function showCalculation(activityId) {
+            currentActivity = appConfig.activities.find(a => a.id === activityId);
+            const modal = document.getElementById('calculationModal');
+            modal.style.display = 'block';
+
+            const memberSelects = document.querySelectorAll('#member1Select, #member2Select');
+            memberSelects.forEach(select => {
+                select.innerHTML = appConfig.members.map(m =>
+                    `<option value="${m.id}">${m.name}</option>`
+                ).join('');
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('calculationModal').style.display = 'none';
+        }
+
+        function calculateActivity() {
+            const member1Id = document.getElementById('member1Select').value;
+            const member2Id = document.getElementById('member2Select').value;
+
+            if (!member1Id || !member2Id || member1Id === member2Id) {
+                alert('请选择两个不同的成员');
+                return;
+            }
+
+            const member1 = appConfig.members.find(m => m.id === member1Id);
+            const member2 = appConfig.members.find(m => m.id === member2Id);
+
+            const getRemaining = (birthday) => {
+                const birthDate = new Date(birthday);
+                const lived = createLifeGrid(birthday).livedMonths;
+                const remaining = appConfig.totalMonths - lived;
+                return Math.floor(remaining * calculateAgeDiscount(birthDate));
+            };
+
+            const remaining1 = getRemaining(member1.birthday);
+            const remaining2 = getRemaining(member2.birthday);
+            const commonMonths = Math.min(remaining1, remaining2);
+
+            let result = 0;
+            switch (currentActivity.type) {
+                case 'monthly':
+                    result = commonMonths * currentActivity.value;
+                    break;
+                case 'yearly':
+                    result = Math.floor(commonMonths / 12) * currentActivity.value;
+                    break;
+                case 'daily':
+                    result = commonMonths * 30 * currentActivity.value;
+                    break;
+            }
+
+            document.getElementById('calculationResult').innerHTML = `
+                ${member1.name} 和 ${member2.name}<br>
+                还能进行 <span style="color:#2196F3">${currentActivity.name}</span> 约<br>
+                <span style="font-size:1.5em;color:#4CAF50">${Math.round(result)}</span> 次
+            `;
+        }
+
+        // 整体计算功能
+        function calculateAllActivities() {
+            const modal = document.getElementById('summaryModal');
+            const resultContainer = document.getElementById('summaryResult');
+            modal.style.display = 'block';
+            resultContainer.innerHTML = '<div class="loading">⏳ 计算中，请稍候...</div>';
+
+            setTimeout(() => {
+                let results = [];
+                appConfig.activities.forEach(activity => {
+                    for (let i = 0; i < appConfig.members.length; i++) {
+                        for (let j = i + 1; j < appConfig.members.length; j++) {
+                            const member1 = appConfig.members[i];
+                            const member2 = appConfig.members[j];
+                            const result = calculateActivityForSummary(activity, member1, member2);
+                            results.push(result);
+                        }
+                    }
+                });
+
+                let html = '<div class="summary-results">';
+                results.forEach(res => {
+                    html += `
+                                    <div class="result-item">
+                                        <b>${res.member1}</b> 和 <b>${res.member2}</b>
+                                        的 <span style="color:#2196F3">${res.activity}</span>
+                                        剩余约 <span style="color:#4CAF50">${res.count}</span> 次
+                                    </div>
+                                `;
+                });
+                html += '</div>';
+
+                resultContainer.innerHTML = html || '<div class="no-data">暂无有效计算结果</div>';
+            }, 500);
+        }
+
+        function calculateActivityForSummary(activity, member1, member2) {
+            const getRemaining = (birthday) => {
+                const birthDate = new Date(birthday);
+                const lived = createLifeGrid(birthday).livedMonths;
+                const remaining = appConfig.totalMonths - lived;
+                return Math.floor(remaining * calculateAgeDiscount(birthDate));
+            };
+
+            const remaining1 = getRemaining(member1.birthday);
+            const remaining2 = getRemaining(member2.birthday);
+            const commonMonths = Math.min(remaining1, remaining2);
+
+            let count = 0;
+            switch (activity.type) {
+                case 'monthly':
+                    count = commonMonths * activity.value;
+                    break;
+                case 'yearly':
+                    count = Math.floor(commonMonths / 12) * activity.value;
+                    break;
+                case 'daily':
+                    count = commonMonths * 30 * activity.value;
+                    break;
+            }
+
+            return {
+                member1: member1.name,
+                member2: member2.name,
+                activity: activity.name,
+                count: Math.round(count)
+            };
+        }
+
+        function closeSummaryModal() {
+            document.getElementById('summaryModal').style.display = 'none';
+        }
+
+        // 事件处理
+        window.onclick = function (event) {
+            if (event.target.className === 'modal') {
+                closeModal();
+                closeSummaryModal();
+            }
+        };
+
+        // 初始化
+        window.onload = init;
+    </script>
+</body>
+
+</html>
