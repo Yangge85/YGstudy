@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>计时器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 70vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            touch-action: manipulation;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input {
+            width: 60px;
+            padding: 8px;
+            margin: 5px;
+            font-size: 18px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #startBtn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #startBtn:hover {
+            background-color: #45a049;
+        }
+        #stopBtn {
+            background-color: #f44336;
+            color: white;
+        }
+        #stopBtn:hover {
+            background-color: #da190b;
+        }
+        #display {
+            font-size: 48px;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+        #info {
+            font-size: 16px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div>游戏倒计时器<div>
+<div>
+            <input type="number" id="hours" placeholder="时" min="0">
+            <input type="number" id="minutes" placeholder="分" min="0" max="59">
+            <input type="number" id="seconds" placeholder="秒" min="0" max="59">
+        </div>
+        <div>滴滴几声<div>
+<div>
+            <input type="number" id="beepCount" placeholder="次数" min="" value="1">
+        </div>
+        <div id="display">00:00:00</div>
+        <div>
+            <button id="startBtn" onclick="startTimer()">开始</button>
+            <button id="stopBtn" onclick="stopTimer()">停止</button>
+        </div>
+        <div id="info">
+            <p>开始时间: <span id="startTime">-</span></p>
+            <p>到期时间: <span id="endTime">-</span></p>
+        </div>
+    </div>
+
+    <script>
+        let timer;
+        let initialTime;
+        let timeLeft;
+        let audioContext;
+        let beepCount;
+        let startDate;
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function startTimer() {
+            initAudio();
+            const hours = parseInt(document.getElementById('hours').value) || 0;
+            const minutes = parseInt(document.getElementById('minutes').value) || 0;
+            const seconds = parseInt(document.getElementById('seconds').value) || 0;
+            beepCount = parseInt(document.getElementById('beepCount').value) || 1;
+
+            initialTime = hours * 3600 + minutes * 60 + seconds;
+            if (initialTime <= 0) {
+                alert('请输入有效的时间！');
+                return;
+            }
+
+            if (timer) clearInterval(timer);
+
+            timeLeft = initialTime;
+            startDate = new Date();
+            updateDisplay();
+            updateTimeInfo();
+            timer = setInterval(countDown, 1000);
+        }
+
+        function stopTimer() {
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
+        }
+
+        function countDown() {
+            timeLeft--;
+            updateDisplay();
+
+            if (timeLeft <= 0) {
+                playBeepSequence(beepCount);
+                timeLeft = initialTime;
+                updateTimeInfo(); // 更新下一次到期时间
+            }
+        }
+
+        function updateDisplay() {
+            const hours = Math.floor(timeLeft / 3600);
+            const minutes = Math.floor((timeLeft % 3600) / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('display').textContent = 
+                `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+        }
+
+        function updateTimeInfo() {
+            const startTimeStr = startDate.toLocaleTimeString();
+            const endDate = new Date(startDate.getTime() + initialTime * 1000);
+            const endTimeStr = endDate.toLocaleTimeString();
+            document.getElementById('startTime').textContent = startTimeStr;
+            document.getElementById('endTime').textContent = endTimeStr;
+        }
+
+        function pad(num) {
+            return num < 10 ? '0' + num : num;
+        }
+
+        function playBeepSequence(count) {
+            let beeps = 0;
+            function playNextBeep() {
+                if (beeps < count) {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+
+                    oscillator.type = 'sine';
+                    oscillator.frequency.value = 800;
+                    gainNode.gain.value = 0.5;
+
+                    oscillator.start();
+                    setTimeout(() => {
+                        oscillator.stop();
+                        beeps++;
+                        if (beeps < count) {
+                            setTimeout(playNextBeep, 200); // 每200ms播放一次
+                        }
+                    }, 200);
+                }
+            }
+            playNextBeep();
+        }
+
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.id === 'hours' || this.id === 'beepCount') {
+                    if (this.value < (this.id === 'beepCount' ? 1 : 0)) this.value = this.id === 'beepCount' ? 1 : 0;
+                } else {
+                    if (this.value < 0) this.value = 0;
+                    if (this.value > 59) this.value = 59;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
