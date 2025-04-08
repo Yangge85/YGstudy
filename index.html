@@ -6,234 +6,376 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>欢迎来到YGG学前端</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at center, #1a1a1a, #000000);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
         header {
-            background-color: #333;
-            color: white;
+            position: relative;
+            background: rgba(30, 60, 114, 0.9);
+            padding: 100px 20px;
+            margin-bottom: 40px;
             text-align: center;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            height: 80px;
-            line-height: 80px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        header a {
-            /* scale: 0.3; */
+        header h1 {
+            font-size: 4.2rem;
+            font-weight: 600;
+            background: linear-gradient(45deg, #8ec5fc, #e0c3fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            z-index: 2;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        header h1::before {
+            content: '\1F4DD';
             position: absolute;
-            top: 0;
-            left: 0;
-
+            left: -40px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            animation: spin 4s linear infinite;
         }
 
-        .time {
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
 
-
-            display: flex;
-            height: 80px;
-            margin-top: 0px;
-            display: block;
-            background-color: #b10909;
-            position: absolute;
-            top: 0;
-            left: 0;
-            /* justify-content: space-between; */
-
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
-        .time::before {
+        header::before {
             content: '';
             position: absolute;
-            bottom: 50%;
-            left: 100%;
-            /* 三角形靠右 */
-            transform: translateY(50%);
-            width: 0;
-            height: 0;
-            border-top: 20px solid transparent;
-            border-bottom: 20px solid transparent;
-            border-left: 35px solid #ed0b0b;
-            /* 红色三角形，指向右 */
-        }
-
-        .shenti {
-            margin-top: 100px;
-            padding: 20px;
-        }
-
-        .section {
-            border: 2px solid #333;
-            padding: 20px;
-            margin-bottom: 20px;
-            background-color: #fff;
-        }
-
-        h2 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-
-        .link {
-            display: block;
-            background-color: #ddd;
-            padding: 10px;
-            margin-bottom: 10px;
-            text-align: center;
-            text-decoration: none;
-            color: #333;
-            transition: transform 0.2s;
-        }
-
-        .link:hover {
-            transform: scale(1.05);
-        }
-
-        footer {
-            background-color: #333;
-            color: #bbb;
-            text-align: center;
-            padding: 10px;
-            position: fixed;
-            bottom: 0;
+            top: 0;
+            left: 0;
             width: 100%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 10%, transparent 10.01%);
+            background-size: 20px 20px;
+            animation: sparkle 2s linear infinite;
+            height: 100%;
+            background: radial-gradient(circle at 50% 0%, rgba(0, 255, 204, 0.1), transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 60px 20px;
+            }
+
+            header h1 {
+                font-size: 2.2rem;
+            }
+        }
+
+
+        header h1 {
+            font-size: 4.2rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #a8a8a8, #e0e0e0, #c0c0c0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            z-index: 2;
+            text-shadow: none;
+        }
+
+        header .subtitle {
+            font-size: 3rem;
+            color: #ff0000;
+            margin-top: 20px;
+            border: 3px solid #ff0000;
+            border-radius: 10px;
+            padding: 5px 15px;
+            display: inline-block;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #ff0000, 0 0 20px #050000;
+            }
+
+            to {
+                text-shadow: 0 0 20px #ff0000, 0 0 30px #ff0000, 0 0 40px #ff0000;
+            }
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(0deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            z-index: 1;
+        }
+
+        @keyframes backgroundAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+
+
+        @keyframes sparkle {
+            0% {
+                transform: translateY(0);
+            }
+
+            100% {
+                transform: translateY(100%);
+            }
         }
 
         .searchfa {
+            margin: 30px 0;
             text-align: center;
-            margin-bottom: 20px;
         }
 
         #searchQuery {
             width: 60%;
-            padding: 10px;
+            padding: 15px;
             font-size: 18px;
+            border-radius: 30px;
+            border: 2px solid #00ffcc;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        #searchQuery:focus {
+            outline: none;
+            border-color: #00b3ff;
+            box-shadow: 0 0 15px rgba(0, 179, 255, 0.5);
         }
 
         #searchbtn {
-            padding: 10px 20px;
+            padding: 15px 30px;
             font-size: 18px;
+            border-radius: 30px;
+            background: linear-gradient(145deg, #00ffcc, #00b3ff);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
         }
 
-        /* 日期右对齐 */
-        .leg1 {
-            margin: 0 auto;
-            text-align: left;
-            padding-bottom: 50px;
+        #searchbtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 179, 255, 0.6);
         }
 
-        .leg2 {
-            margin-bottom: 10px;
-            font-size: 18px;
-            display: block;
-            /* 确保 leg2 占一行 */
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
         }
 
-        .legday {
-            margin-bottom: 10px;
-            font-size: 18px;
-            text-align: right;
-            display: block;
-            /* 确保 legday 占一行 */
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .section h2 {
+            font-size: 2rem;
+            color: #00ffcc;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+        }
+
+        .link-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .link:hover {
+            background: linear-gradient(145deg, #00ffcc, #00b3ff);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 179, 255, 0.3);
+        }
+
+        footer {
+            background: linear-gradient(145deg, #1e3c72 0%, #2a5298 100%);
+            padding: 20px;
+            text-align: center;
+            border-radius: 20px;
+            margin-top: 40px;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        footer div {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* 媒体查询，针对手机设备 */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            #searchQuery {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            #searchbtn {
+                width: 100%;
+                margin-left: 0;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .link {
+                padding: 10px;
+                font-size: 14px;
+            }
         }
     </style>
-
 </head>
 
 <body>
-    <header>
-        <h1 style="width: auto; height: 60px; line-height: 50px;">阳哥学习做网站</h1>
-        <div class="time">
-            <span>YGG&reg; &nbsp;</span>
-        </div>
-    </header>
+    <!-- 主内容区域 -->
+    <div class="main-content">
+        <header>
+            <h1>阳哥的美好生活</h1>
+            <h2 class="subtitle">用AI服务生活</h2>
+        </header>
 
-    <div class="shenti">
         <!-- 搜索框 -->
         <div class="searchfa">
             <input type="text" id="searchQuery" placeholder="请输入关键词">
-            <button id="searchbtn" onclick="searchBaidu()">百度</button>
+            <button id="searchbtn" onclick="searchDoubao()">豆包</button>
         </div>
 
-        <!-- 精品课程推荐 -->
-        <div class="section">
-            <h2>精品课程推荐</h2>
-            <a class="link" href="https://www.bilibili.com/video/BV1kM4y127Li?p=1">HTML-黑马程序员</a>
-            <a class="link" href="https://www.bilibili.com/video/BV1kM4y127Li?p=29">CSS-黑马程序员</a>
-            <a class="link"
-                href="https://www.bilibili.com/video/BV1Y84y1L7Nn/?spm_id_from=333.788.recommend_more_video.4">JavaScript-黑马程序员</a>
-        </div>
 
-        <!-- 开发工具 -->
-        <div class="section">
-            <h2>开发工具</h2>
-            <a class="link" href="https://www.bootcss.com/">Bootstrap框架</a>
-            <a class="link" href="https://developer.mozilla.org/zh-CN/">MDN文档查询</a>
-            <a class="link" href="https://cn.vuejs.org/">Vue.js</a>
-            <a class="link" href="https://code.visualstudio.com/">VSCode</a>
-            <a class="link" href="https://nodejs.cn/">Node.js</a>
-            <a class="link" href="https://www.iconfont.cn/">阿里巴巴IconFont</a>
-            <a class="link" href="https://uniapp.dcloud.net.cn/">Uni app</a>
-            <a class="link" href="https://gitee.com/">Gitee代码托管平台</a>
-            <a class="link" href="https://www.w3school.com.cn/index.html">W3school</a>
-            <a class="link" href="https://www.fancynode.com.cn/pxcook">像素大厨PxCook</a>
-
-        </div>
 
         <!-- AI专区 -->
         <div class="section">
             <h2>AI专区</h2>
-            <a class="link" href="https://www.doubao.com/chat/">豆包</a>
-            <a class="link" href="https://www.aigc.cn/">AIGC导航</a>
-
-            <a class="link" href="https://chat.openai.com/">ChatGPT</a>
-            <a class="link" href="https://www.liblib.ai/">哩布哩布AI</a>
-            <a class="link"
-                href="https://www.bilibili.com/video/BV1iM4y1y7oA/?spm_id_from=333.999.0.0&vd_source=6b6b55f40873aa842b6a52b4efbc6e09">Stable
-                Diffusion</a>
-            <a class="link" href="https://js.design/workspace">即时设计</a>
-
+            <div class="link-container">
+                <a class="link" href="https://www.doubao.com/chat/">豆包</a>
+                <a class="link" href="https://www.aigc.cn/">AIGC导航</a>
+                <a class="link" href="https://chat.openai.com/">ChatGPT</a>
+                <a class="link" href="https://www.liblib.ai/">哩布哩布AI</a>
+                <a class="link"
+                    href="https://www.bilibili.com/video/BV1iM4y1y7oA/?spm_id_from=333.999.0.0&vd_source=6b6b55f40873aa842b6a52b4efbc6e09">Stable
+                    Diffusion</a>
+                <a class="link" href="https://chat.deepseek.com/">DeepSeek</a>
+                <a class="link" href="https://www.coze.cn/home">Coze扣子</a>
+            </div>
         </div>
 
         <!-- 成果展示 -->
         <div class="section">
             <h2>成果展示</h2>
-            <a class="link" href="/YGstudy/排班表/排班表.html">排班表</a>
-            <a class="link" href="/YGstudy/车牌生成/index.html">车牌生成</a>
-            <a class="link" href="/YGstudy/股票收益分成/股票收益分成.html">股票收益分成</a>
-            <a class="link" href="/YGstudy/大象理财产品计算器/大象理财产品计算器.html">大象理财产品计算器</a>
-            <a class="link" href="/YGstudy/大象新闻/index.html">大象新闻</a>
-            <a class="link" href="/YGstudy/生男生女/生男生女.html">生男生女</a>
-            <a class="link" href="/YGstudy/双色球/双色球.html">双色球</a>
-            <a class="link" href="/YGstudy/水泥厂的孩子们/index.html">水泥厂的孩子们</a>
-            <a class="link" href="/YGstudy/大学的美好时光/index.html">大学的美好时光</a>
-            <a class="link" href="/YGstudy/儿歌点播/index.html">儿歌点播</a>
-            <a class="link" href="/YGstudy/抽奖/index.html">抽奖</a>
-            <a class="link" href="/YGstudy/杜村/ducun.html">零件加工计算器</a>
-            <a class="link" href="/YGstudy/课程表/课程表.html">课程表</a>
-            <a class="link" href="/YGstudy/阴阳师/阴阳师.html">阴阳师</a>
-            <a class="link" href="/YGstudy/体重记录/体重记录.html">体重记录</a>
-            <a class="link" href="/YGstudy/麻将分数记录/麻将分数记录.html">麻将分数记录</a>
-
-
+            <div class="link-container">
+                <a class="link" href="/YGstudy/YGstudy/排班表/排班表.html">排班表</a>
+                <a class="link" href="/YGstudy/YGstudy/车牌生成/index.html">车牌生成</a>
+                <a class="link" href="/YGstudy/YGstudy/股票收益分成/股票收益分成.html">股票收益分成</a>
+                <a class="link" href="/YGstudy/YGstudy/大象理财产品计算器/大象理财产品计算器.html">大象理财产品计算器</a>
+                <a class="link" href="/YGstudy/YGstudy/大象新闻/index.html">大象新闻</a>
+                <a class="link" href="/YGstudy/YGstudy/生男生女/生男生女.html">生男生女</a>
+                <a class="link" href="/YGstudy/YGstudy/双色球/双色球.html">双色球</a>
+                <a class="link" href="/YGstudy/YGstudy/水泥厂的孩子们/index.html">水泥厂的孩子们</a>
+                <a class="link" href="/YGstudy/YGstudy/大学的美好时光/index.html">大学的美好时光</a>
+                <a class="link" href="/YGstudy/YGstudy/儿歌点播/index.html">儿歌点播</a>
+                <a class="link" href="/YGstudy/YGstudy/抽奖/index.htm">抽奖</a>
+                <a class="link" href="/YGstudy/YGstudy/杜村/ducun.html">零件加工计算器</a>
+                <a class="link" href="/YGstudy/YGstudy/课程表/课程表.html">课程表</a>
+            </div>
         </div>
-
-        <!-- 友情链接 -->
+        <!-- 开发工具 -->
         <div class="section">
-            <h2>友情链接</h2>
-            <a class="link" href="https://duhengsheng.gitee.io/count">爱算数和猜数字小游戏</a>
-            <a class="link" href="https://duhengsheng.gitee.io/mynavigation">我做过的网页</a>
-            <a class="link" href="https://duhengsheng.gitee.io/daxiang">大象新闻复制</a>
-            <a class="link" href="https://duhengsheng.gitee.io/mu4yu2">电子木鱼</a>
-            <a class="link" href="https://duhengsheng.gitee.io/new-year2">新年</a>
-
+            <h2>开发工具</h2>
+            <div class="link-container">
+                <a class="link" href="https://www.bootcss.com/">Bootstrap框架</a>
+                <a class="link" href="https://developer.mozilla.org/zh-CN/">MDN文档查询</a>
+                <a class="link" href="https://cn.vuejs.org/">Vue.js</a>
+                <a class="link" href="https://code.visualstudio.com/">VSCode</a>
+                <a class="link" href="https://nodejs.cn/">Node.js</a>
+                <a class="link" href="https://www.iconfont.cn/">阿里巴巴IconFont</a>
+                <a class="link" href="https://uniapp.dcloud.net.cn/">Uni app</a>
+                <a class="link" href="https://gitee.com/">Gitee代码托管平台</a>
+                <a class="link" href="https://www.w3school.com.cn/index.html">W3school</a>
+                <a class="link" href="https://www.fancynode.com.cn/pxcook">像素大厨PxCook</a>
+            </div>
         </div>
-
         <!-- 心路历程 -->
         <div class="section">
             <h2>心路历程</h2>
@@ -265,22 +407,25 @@
                 <div class="leg2">全部移到github上，超级简单，用桌面版更好办。</div>
                 <div class="legday">------2024.9.12</div>
 
-                <div class="leg2">又是一年中秋节。时间过得真快！！！</div>
+                <div class="leg2">又是一次中秋节。时间过得真快！！！</div>
                 <div class="legday">------2024.9.12</div>
+
+                <div class="leg2">全部用上ai了，网页都不用写了</div>
+                <div class="legday">------2025.3.30</div>
             </div>
         </div>
+
+        <footer>
+            <div>&copy; 2023-2026 Yangge. All Rights Reserved.</div>
+        </footer>
     </div>
 
-    <footer>
-        <div>&copy; 2023-2024 Yangge. All Rights Reserved.</div>
-    </footer>
-
     <script>
-        // 百度搜索跳转
-        function searchBaidu() {
+        // 豆包搜索跳转
+        function searchDoubao() {
             let query = document.getElementById("searchQuery").value;
             if (query.trim() !== "") {
-                let url = "https://www.baidu.com/s?wd=" + encodeURIComponent(query);
+                let url = "https://www.doubao.com/chat/?q=" + encodeURIComponent(query);
                 window.location.href = url;
             }
         }
