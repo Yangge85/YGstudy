@@ -26,19 +26,23 @@
             padding: 20px;
         }
 
+        /* 调整header的padding值可改变标题区域大小 */
         header {
             position: relative;
             background: rgba(30, 60, 114, 0.9);
-            padding: 100px 20px;
-            margin-bottom: 40px;
+            padding: 120px 40px;
+            /* 可调整此值 */
+            margin-bottom: 30px;
             text-align: center;
             overflow: hidden;
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        /* 调整h1的font-size值可改变标题字体大小 */
         header h1 {
-            font-size: 4.2rem;
+            font-size: 2rem;
+            /* 可调整此值 */
             font-weight: 600;
             background: linear-gradient(45deg, #8ec5fc, #e0c3fc);
             -webkit-background-clip: text;
@@ -110,7 +114,7 @@
 
 
         header h1 {
-            font-size: 4.2rem;
+            font-size: 2.2rem;
             font-weight: 800;
             background: linear-gradient(45deg, #a8a8a8, #e0e0e0, #c0c0c0);
             -webkit-background-clip: text;
@@ -121,7 +125,7 @@
         }
 
         header .subtitle {
-            font-size: 3rem;
+            font-size: 1.5rem;
             color: #ff0000;
             margin-top: 20px;
             border: 3px solid #ff0000;
@@ -236,7 +240,7 @@
         }
 
         .section h2 {
-            font-size: 2rem;
+            font-size: 3rem;
             color: #00ffcc;
             margin-bottom: 20px;
             text-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
@@ -284,7 +288,7 @@
         /* 媒体查询，针对手机设备 */
         @media (max-width: 768px) {
             header h1 {
-                font-size: 2rem;
+                font-size: 2.5rem;
             }
 
             #searchQuery {
@@ -325,14 +329,14 @@
     <!-- 主内容区域 -->
     <div class="main-content">
         <header>
-            <h1>阳哥的美好生活</h1>
-            <h2 class="subtitle">用AI服务生活</h2>
+            <h1>YangGe's 美好 生活</h1>
+            <h2 class="subtitle">享受AI拥抱科技</h2>
         </header>
 
         <!-- 搜索框 -->
         <div class="searchfa">
             <input type="text" id="searchQuery" placeholder="请输入关键词">
-            <button id="searchbtn" onclick="searchDoubao()">豆包</button>
+            <button id="searchbtn" onclick="searchDouyin()">抖音搜索</button>
         </div>
 
 
@@ -489,10 +493,10 @@
         });
 
         // 豆包搜索跳转
-        function searchDoubao() {
+        function searchDouyin() {
             let query = document.getElementById("searchQuery").value;
             if (query.trim() !== "") {
-                let url = "https://www.doubao.com/chat/?q=" + encodeURIComponent(query);
+                let url = "https://www.douyin.com/search/" + encodeURIComponent(query);
                 window.location.href = url;
             }
         }
