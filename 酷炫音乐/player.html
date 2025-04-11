@@ -320,7 +320,7 @@
         </div>
     </div>
 
-    <audio id="audioPlayer" src="music/我记得你眼里的依恋.m4a"></audio>
+    <audio id="audioPlayer" src="../music/我记得你眼里的依恋.m4a"></audio>
 
     <script>
         const audio = document.getElementById('audioPlayer');
@@ -479,7 +479,7 @@
         songItems.forEach(item => {
             item.addEventListener('click', () => {
                 const songName = item.textContent;
-                audio.src = `music/${songName}.m4a`;
+                audio.src = `../music/${songName}.m4a`;
                 audio.play();
                 playBtn.textContent = '暂停';
                 loadLyrics();
